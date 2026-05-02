@@ -26,6 +26,11 @@ jwt = JWTManager(app)
 
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
+# Root route for testing
+@app.route('/', methods=['GET'])
+def root():
+    return jsonify({'message': 'Flask app is running'}), 200
+
 # Health check (no auth required)
 @app.route('/health', methods=['GET'])
 def health():
@@ -160,11 +165,15 @@ def internal_error(error):
     return jsonify({'message': 'Internal server error'}), 500
 
 if __name__ == '__main__':
+    print("Starting Flask app...")
     with app.app_context():
         try:
             db.create_all()  # Create tables
+            print("Database tables created successfully")
         except Exception as e:
             print(f'Error creating tables: {e}')
     
-    port = int(os.getenv('PORT', 5000))
-    app.run(debug=os.getenv('FLASK_DEBUG', False), host='0.0.0.0', port=port)
+    print("Registered routes:", [str(rule) for rule in app.url_map.iter_rules() if not str(rule).startswith('/static')])
+    port = int(os.getenv('PORT', 5002))
+    print(f"Starting server on port {port}")
+    app.run(debug=True, host='0.0.0.0', port=port)

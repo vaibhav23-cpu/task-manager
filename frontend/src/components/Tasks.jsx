@@ -7,6 +7,7 @@ function Tasks() {
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [showProjectForm, setShowProjectForm] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,6 +45,25 @@ function Tasks() {
     }
   };
 
+  const createProject = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData);
+
+    try {
+      await axios.post(`${API_BASE_URL}/projects`, data, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setShowProjectForm(false);
+      const projectsRes = await axios.get(`${API_BASE_URL}/projects`, { headers: { Authorization: `Bearer ${token}` } });
+      setProjects(projectsRes.data);
+      alert('Project created successfully');
+    } catch (error) {
+      alert('Error creating project');
+    }
+  };
+
   const createTask = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
@@ -69,11 +89,27 @@ function Tasks() {
         <h1>Tasks</h1>
         <div>
           <button onClick={() => navigate('/dashboard')} style={{ marginRight: '10px', padding: '8px 16px' }}>Dashboard</button>
+          <button onClick={() => setShowProjectForm(!showProjectForm)} style={{ marginRight: '10px', padding: '8px 16px', backgroundColor: '#17a2b8', color: 'white', border: 'none', borderRadius: '3px' }}>
+            {showProjectForm ? 'Cancel Project' : 'Add Project'}
+          </button>
           <button onClick={() => setShowForm(!showForm)} style={{ padding: '8px 16px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '3px' }}>
             {showForm ? 'Cancel' : 'Add Task'}
           </button>
         </div>
       </header>
+
+      {showProjectForm && (
+        <form onSubmit={createProject} style={{ marginBottom: '20px', padding: '20px', border: '1px solid #ccc', borderRadius: '5px' }}>
+          <h2>Create Project</h2>
+          <div style={{ marginBottom: '10px' }}>
+            <input name="name" placeholder="Project Name" required style={{ width: '100%', padding: '8px' }} />
+          </div>
+          <div style={{ marginBottom: '10px' }}>
+            <textarea name="description" placeholder="Project Description" style={{ width: '100%', padding: '8px' }}></textarea>
+          </div>
+          <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '3px' }}>Create Project</button>
+        </form>
+      )}
 
       {showForm && (
         <form onSubmit={createTask} style={{ marginBottom: '20px', padding: '20px', border: '1px solid #ccc', borderRadius: '5px' }}>

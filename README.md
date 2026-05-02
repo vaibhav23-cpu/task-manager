@@ -15,6 +15,7 @@ A simple team task management app built with React frontend and Flask backend.
 cd backend
 pip install -r requirements.txt
 cp .env.example .env  # Update .env with your values
+python create_db.py   # create local database tables
 python app.py
 ```
 

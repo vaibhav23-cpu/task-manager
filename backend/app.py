@@ -13,19 +13,23 @@ app = Flask(__name__)
 CORS(app)  # Allow frontend to connect
 
 # Config
-database_url = os.getenv('DATABASE_URL')
-if database_url and database_url.startswith('postgres://'):
-    database_url = database_url.replace('postgres://', 'postgresql://', 1)
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///tasks.db'
+uri = os.getenv('DATABASE_URL')
+# Fix for some environments that use the old postgres:// prefix
+if uri and uri.startswith('postgres://'):
+    uri = uri.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = uri or 'sqlite:///tasks.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'dev-secret-key')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
 db.init_app(app)
 jwt = JWTManager(app)
 
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
-# Routes for Projects
+# Health check (no auth required)
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'ok'}), 200
 @app.route('/projects', methods=['GET'])
 @jwt_required()
 def get_projects():
@@ -145,7 +149,22 @@ def get_dashboard():
         'overdue_tasks': overdue_tasks
     })
 
+# Error handlers
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'message': 'Not found'}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return jsonify({'message': 'Internal server error'}), 500
+
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()  # Create tables
-    app.run(debug=os.getenv('FLASK_DEBUG', False))
+        try:
+            db.create_all()  # Create tables
+        except Exception as e:
+            print(f'Error creating tables: {e}')
+    
+    port = int(os.getenv('PORT', 5000))
+    app.run(debug=os.getenv('FLASK_DEBUG', False), host='0.0.0.0', port=port)

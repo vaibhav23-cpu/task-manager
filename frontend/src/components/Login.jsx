@@ -6,6 +6,7 @@ import API_BASE_URL from '../config';
 function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
   const [isRegister, setIsRegister] = useState(false);
   const navigate = useNavigate();
 
@@ -16,6 +17,7 @@ function Login() {
       const response = await axios.post(`${API_BASE_URL}${endpoint}`, {
         username,
         password,
+        email,
         role: 'member'  // default for register
       });
       
@@ -45,6 +47,18 @@ function Login() {
             style={{ width: '100%', padding: '8px' }}
           />
         </div>
+        {isRegister && (
+          <div style={{ marginBottom: '10px' }}>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{ width: '100%', padding: '8px' }}
+            />
+          </div>
+        )}
         <div style={{ marginBottom: '10px' }}>
           <input
             type="password"

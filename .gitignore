@@ -21,29 +21,3 @@ frontend/.env.local
 # OS
 .DS_Store
 Thumbs.db
-
-
-
-# Environment files
-.env
-.env.*
-!.env.example
-
-# Environment backups
-*.env.backup
-
-# Python
-__pycache__/
-*.py[cod]
-venv/
-.venv/
-
-# Node
-node_modules/
-dist/
-
-# IDE
-.vscode/
-
-# Unrelated local files
-Case_5_data_MBA_Logistic_Regression_Case_Study.xlsx
